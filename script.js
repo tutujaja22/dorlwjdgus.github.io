@@ -1,13 +1,17 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const menu = document.getElementById("menu");
+const easyBtn = document.getElementById("easyBtn");
+const normalBtn = document.getElementById("normalBtn");
+const hardBtn = document.getElementById("hardBtn");
 
-// 캔버스 크기를 동적으로 설정
-const gridSize = 20;
-canvas.width = Math.min(window.innerWidth, 400); // 모바일 화면 너비에 맞춤
-canvas.height = canvas.width; // 정사각형 유지
+// 캔버스 설정
+const gridSize = 25;
+canvas.width = Math.min(window.innerWidth, 400);
+canvas.height = canvas.width;
 const tileCount = canvas.width / gridSize;
 
-// 뱀과 먹이 초기화
+// 게임 변수
 let snake = [{ x: 10, y: 10 }];
 let food = {
     x: Math.floor(Math.random() * tileCount),
@@ -16,10 +20,34 @@ let food = {
 let dx = 0;
 let dy = 0;
 let score = 0;
+let speed;
+let gameLoop;
 
-// 게임 루프 설정
-let speed = 7;
-let gameLoop = setInterval(drawGame, 1000 / speed);
+// 난이도 설정 함수
+function startGame(difficulty) {
+    menu.style.display = "none"; // 메뉴 숨기기
+    canvas.style.display = "block"; // 캔버스 보이기
+
+    // 난이도별 설정
+    if (difficulty === "easy") {
+        speed = 4; // 느린 속도
+        swipeThreshold = 40; // 덜 민감한 터치
+    } else if (difficulty === "normal") {
+        speed = 6; // 중간 속도
+        swipeThreshold = 30;
+    } else if (difficulty === "hard") {
+        speed = 8; // 빠른 속도
+        swipeThreshold = 20; // 민감한 터치
+    }
+
+    // 게임 시작
+    gameLoop = setInterval(drawGame, 1000 / speed);
+}
+
+// 버튼 이벤트 연결
+easyBtn.addEventListener("click", () => startGame("easy"));
+normalBtn.addEventListener("click", () => startGame("normal"));
+hardBtn.addEventListener("click", () => startGame("hard"));
 
 // 키보드 입력 처리
 document.addEventListener("keydown", changeDirection);
@@ -27,6 +55,7 @@ document.addEventListener("keydown", changeDirection);
 // 터치 입력 처리
 let touchStartX = 0;
 let touchStartY = 0;
+let swipeThreshold; // 난이도에 따라 바뀜
 
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
@@ -42,22 +71,19 @@ canvas.addEventListener("touchmove", (e) => {
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
 
-    // 스와이프 방향 감지
     if (Math.abs(diffX) > Math.abs(diffY)) {
-        // 좌우 스와이프
-        if (diffX > 0 && dx !== -1) { // 오른쪽
+        if (diffX > swipeThreshold && dx !== -1) {
             dx = 1;
             dy = 0;
-        } else if (diffX < 0 && dx !== 1) { // 왼쪽
+        } else if (diffX < -swipeThreshold && dx !== 1) {
             dx = -1;
             dy = 0;
         }
     } else {
-        // 상하 스와이프
-        if (diffY > 0 && dy !== -1) { // 아래
+        if (diffY > swipeThreshold && dy !== -1) {
             dx = 0;
             dy = 1;
-        } else if (diffY < 0 && dy !== 1) { // 위
+        } else if (diffY < -swipeThreshold && dy !== 1) {
             dx = 0;
             dy = -1;
         }
@@ -107,7 +133,8 @@ function drawGame() {
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount),
         };
-        speed += 0.5;
+        const speedIncrease = speed * 0.05; // 속도 증가를 더 완만하게 (5%)
+        speed += speedIncrease;
         clearInterval(gameLoop);
         gameLoop = setInterval(drawGame, 1000 / speed);
     } else {
@@ -148,10 +175,6 @@ function gameOver() {
     dx = 0;
     dy = 0;
     score = 0;
-    speed = 7;
-    food = {
-        x: Math.floor(Math.random() * tileCount),
-        y: Math.floor(Math.random() * tileCount),
-    };
-    gameLoop = setInterval(drawGame, 1000 / speed);
+    canvas.style.display = "none"; // 캔버스 숨기기
+    menu.style.display = "block"; // 메뉴 다시 보이기
 }
