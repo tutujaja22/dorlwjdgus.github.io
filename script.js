@@ -25,10 +25,14 @@ function initGame() {
     dy = 0;
     score = 0;
 
-    // 조이스틱을 우측 하단에 배치
+    // 조이스틱을 캔버스 우측 하단에 배치
     const canvasRect = canvas.getBoundingClientRect();
-    joystickContainer.style.left = (canvasRect.right - 120 - 10) + "px"; // 캔버스 우측에서 10px 여백
-    joystickContainer.style.top = (canvasRect.bottom - 120 - 10) + "px"; // 캔버스 하단에서 10px 여백
+    const joystickWidth = 120; // 조이스틱 너비
+    const joystickHeight = 120; // 조이스틱 높이
+    const offset = 10; // 캔버스와의 여백
+
+    joystickContainer.style.left = (canvasRect.right - joystickWidth - offset) + "px"; // 캔버스 오른쪽 끝에서 조이스틱 너비와 여백만큼 왼쪽
+    joystickContainer.style.top = (canvasRect.bottom - joystickHeight - offset) + "px"; // 캔버스 하단에서 조이스틱 높이와 여백만큼 위
     console.log("Joystick positioned at:", joystickContainer.style.left, joystickContainer.style.top);
 }
 
@@ -61,9 +65,9 @@ document.addEventListener("keydown", changeDirection);
 
 // 조이스틱 입력
 let isDragging = false;
-const joystickCenterX = 60; // 조이스틱 크기 증가에 맞춤
+const joystickCenterX = 60;
 const joystickCenterY = 60;
-const maxDistance = 40; // 이동 범위 증가로 더 수월하게
+const maxDistance = 40;
 
 function setupJoystickListeners() {
     joystickContainer.addEventListener("touchstart", (e) => {
