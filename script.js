@@ -32,10 +32,10 @@ function startGame(difficulty) {
 
     if (difficulty === "easy") {
         speed = 4;
-        swipeThreshold = 40;
+        swipeThreshold = 30; // 조금 더 민감하게 조정
     } else if (difficulty === "normal") {
         speed = 6;
-        swipeThreshold = 30;
+        swipeThreshold = 25;
     } else if (difficulty === "hard") {
         speed = 8;
         swipeThreshold = 20;
@@ -52,20 +52,19 @@ hardBtn.addEventListener("click", () => startGame("hard"));
 // 키보드 입력
 document.addEventListener("keydown", changeDirection);
 
-// 터치 입력
+// 터치 입력 (document 전체로 확장)
 let touchStartX = 0;
 let touchStartY = 0;
 
-// 터치 이벤트 리스너를 함수로 분리
 function setupTouchListeners() {
-    canvas.addEventListener("touchstart", (e) => {
+    document.addEventListener("touchstart", (e) => {
         e.preventDefault();
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         console.log("Touch started at:", touchStartX, touchStartY);
     }, { passive: false });
 
-    canvas.addEventListener("touchmove", (e) => {
+    document.addEventListener("touchmove", (e) => {
         e.preventDefault();
         const touchEndX = e.touches[0].clientX;
         const touchEndY = e.touches[0].clientY;
@@ -101,12 +100,11 @@ function setupTouchListeners() {
         touchStartY = touchEndY;
     }, { passive: false });
 
-    canvas.addEventListener("touchend", (e) => {
+    document.addEventListener("touchend", (e) => {
         console.log("Touch ended");
     }, { passive: false });
 }
 
-// 게임 시작 시 터치 리스너 설정
 setupTouchListeners();
 
 function changeDirection(event) {
