@@ -4,11 +4,8 @@ const menu = document.getElementById("menu");
 const easyBtn = document.getElementById("easyBtn");
 const normalBtn = document.getElementById("normalBtn");
 const hardBtn = document.getElementById("hardBtn");
-
-// 터치 오버레이 추가 (피드백용)
-const touchOverlay = document.createElement("div");
-touchOverlay.id = "touchOverlay";
-document.body.appendChild(touchOverlay);
+const joystickContainer = document.getElementById("joystickContainer");
+const joystickKnob = document.getElementById("joystickKnob");
 
 // 게임 변수
 const gridSize = 25;
@@ -24,24 +21,23 @@ function initGame() {
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount),
     };
-    dx = 1; // 시작 시 오른쪽으로
+    dx = 1; // 시작 시 오른쪽
     dy = 0;
     score = 0;
 
-    // 오버레이 위치 조정
-    touchOverlay.style.top = canvas.offsetTop + "px";
-    touchOverlay.style.left = canvas.offsetLeft + "px";
+    // 조이스틱 위치 조정
+    joystickContainer.style.left = (canvas.offsetLeft + canvas.width / 2 - 50) + "px";
 }
 
 function startGame(difficulty) {
     menu.style.display = "none";
     canvas.style.display = "block";
-    touchOverlay.style.display = "block";
+    joystickContainer.style.display = "block";
 
     initGame();
 
     if (difficulty === "easy") {
-        speed = 3; // 더 느리게
+        speed = 3;
     } else if (difficulty === "normal") {
         speed = 5;
     } else if (difficulty === "hard") {
@@ -59,57 +55,76 @@ hardBtn.addEventListener("click", () => startGame("hard"));
 // 키보드 입력
 document.addEventListener("keydown", changeDirection);
 
-// 터치 입력 (위치 기반)
-function setupTouchListeners() {
-    document.addEventListener("touchstart", (e) => {
+// 조이스틱 입력
+let isDragging = false;
+const joystickCenterX = 50; // 조이스틱 컨테이너 중심
+const joystickCenterY = 50;
+const maxDistance = 30; // 조이스틱 이동 범위
+
+function setupJoystickListeners() {
+    joystickContainer.addEventListener("touchstart", (e) => {
         e.preventDefault();
-        handleTouch(e.touches[0]);
+        isDragging = true;
+        handleJoystick(e.touches[0]);
     }, { passive: false });
 
-    document.addEventListener("touchmove", (e) => {
+    joystickContainer.addEventListener("touchmove", (e) => {
         e.preventDefault();
-        handleTouch(e.touches[0]);
+        if (isDragging) {
+            handleJoystick(e.touches[0]);
+        }
     }, { passive: false });
 
-    document.addEventListener("touchend", (e) => {
-        touchOverlay.style.background = "transparent"; // 터치 끝나면 피드백 제거
+    joystickContainer.addEventListener("touchend", (e) => {
+        isDragging = false;
+        joystickKnob.style.left = "30px";
+        joystickKnob.style.top = "30px";
+        // 방향 유지 (터치 끝나도 현재 방향으로 계속 감)
     }, { passive: false });
 }
 
-function handleTouch(touch) {
-    const rect = canvas.getBoundingClientRect();
+function handleJoystick(touch) {
+    const rect = joystickContainer.getBoundingClientRect();
     const touchX = touch.clientX - rect.left;
     const touchY = touch.clientY - rect.top;
 
-    console.log("Touch at:", touchX, touchY);
+    // 조이스틱 중심으로부터의 거리 계산
+    let deltaX = touchX - joystickCenterX;
+    let deltaY = touchY - joystickCenterY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // 캔버스 내 터치인지 확인
-    if (touchX >= 0 && touchX <= canvas.width && touchY >= 0 && touchY <= canvas.height) {
-        const halfWidth = canvas.width / 2;
-        const halfHeight = canvas.height / 2;
+    // 이동 범위 제한
+    if (distance > maxDistance) {
+        deltaX = (deltaX / distance) * maxDistance;
+        deltaY = (deltaY / distance) * maxDistance;
+    }
 
-        // 터치 위치에 따라 방향 결정
-        if (touchX < halfWidth && touchY < halfHeight && dx !== 1) { // 좌상단: 왼쪽
-            dx = -1;
-            dy = 0;
-            touchOverlay.style.background = "rgba(255, 0, 0, 0.2)"; // 빨간 피드백
-        } else if (touchX >= halfWidth && touchY < halfHeight && dx !== -1) { // 우상단: 오른쪽
+    // 조이스틱 노브 이동
+    joystickKnob.style.left = (30 + deltaX) + "px";
+    joystickKnob.style.top = (30 + deltaY) + "px";
+
+    // 뱀 방향 설정
+    const threshold = 10; // 방향 전환 민감도
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > threshold && dx !== -1) {
             dx = 1;
             dy = 0;
-            touchOverlay.style.background = "rgba(0, 255, 0, 0.2)"; // 초록 피드백
-        } else if (touchX < halfWidth && touchY >= halfHeight && dy !== -1) { // 좌하단: 아래
+        } else if (deltaX < -threshold && dx !== 1) {
+            dx = -1;
+            dy = 0;
+        }
+    } else {
+        if (deltaY > threshold && dy !== -1) {
             dx = 0;
             dy = 1;
-            touchOverlay.style.background = "rgba(0, 0, 255, 0.2)"; // 파란 피드백
-        } else if (touchX >= halfWidth && touchY >= halfHeight && dy !== 1) { // 우하단: 위
+        } else if (deltaY < -threshold && dy !== 1) {
             dx = 0;
             dy = -1;
-            touchOverlay.style.background = "rgba(255, 255, 0, 0.2)"; // 노란 피드백
         }
     }
 }
 
-setupTouchListeners();
+setupJoystickListeners();
 
 function changeDirection(event) {
     const LEFT_KEY = 37;
@@ -178,6 +193,6 @@ function gameOver() {
     clearInterval(gameLoop);
     alert("Game Over! Score: " + score);
     canvas.style.display = "none";
-    touchOverlay.style.display = "none";
+    joystickContainer.style.display = "none";
     menu.style.display = "block";
 }
