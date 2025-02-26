@@ -7,26 +7,6 @@ const hardBtn = document.getElementById("hardBtn");
 const joystickContainer = document.getElementById("joystickContainer");
 const joystickKnob = document.getElementById("joystickKnob");
 
-// 이미지 로드
-const snakeHeadImg = new Image();
-const snakeBodyImg = new Image();
-const appleImg = new Image();
-
-snakeHeadImg.src = "images/snake_head.png"; // 뱀 머리 이미지 경로
-snakeBodyImg.src = "images/snake_body.png"; // 뱀 몸통 이미지 경로
-appleImg.src = "images/apple.png"; // 사과 이미지 경로
-
-// 이미지 로드 완료 대기
-let imagesLoaded = false;
-Promise.all([
-    new Promise(resolve => snakeHeadImg.onload = resolve),
-    new Promise(resolve => snakeBodyImg.onload = resolve),
-    new Promise(resolve => appleImg.onload = resolve)
-]).then(() => {
-    imagesLoaded = true;
-    console.log("Images loaded successfully");
-});
-
 // 게임 변수
 const gridSize = 25;
 let snake, food, dx, dy, score, speed, gameLoop, tileCount;
@@ -61,11 +41,6 @@ function initGame() {
 }
 
 function startGame(difficulty) {
-    if (!imagesLoaded) {
-        alert("Images are not loaded yet. Please try again.");
-        return;
-    }
-
     menu.style.display = "none";
     canvas.style.display = "block";
     joystickContainer.style.display = "block";
@@ -177,8 +152,6 @@ function changeDirection(event) {
 }
 
 function drawGame() {
-    if (!imagesLoaded) return;
-
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
@@ -210,21 +183,41 @@ function drawGame() {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 뱀 머리 그리기 (방향에 따라 회전)
-    const headAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+    // 뱀 머리 그리기 (초록색 원 + 눈)
     ctx.save();
     ctx.translate(snake[0].x * gridSize + gridSize / 2, snake[0].y * gridSize + gridSize / 2);
+    const headAngle = Math.atan2(dy, dx) * 180 / Math.PI;
     ctx.rotate(headAngle * Math.PI / 180);
-    ctx.drawImage(snakeHeadImg, -gridSize / 2, -gridSize / 2, gridSize, gridSize);
+    ctx.beginPath();
+    ctx.arc(0, 0, gridSize / 2 - 2, 0, Math.PI * 2);
+    ctx.fillStyle = "green";
+    ctx.fill();
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(-5, -5, 2, 0, Math.PI * 2); // 왼쪽 눈
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(5, -5, 2, 0, Math.PI * 2); // 오른쪽 눈
+    ctx.fill();
     ctx.restore();
 
-    // 뱀 몸통 그리기
+    // 뱀 몸통 그리기 (초록색 직사각형)
     for (let i = 1; i < snake.length; i++) {
-        ctx.drawImage(snakeBodyImg, snake[i].x * gridSize, snake[i].y * gridSize, gridSize, gridSize);
+        ctx.fillStyle = "green";
+        ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 2, gridSize - 2);
     }
 
-    // 먹이 그리기
-    ctx.drawImage(appleImg, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+    // 먹이(사과) 그리기 (빨간색 원 + 줄기)
+    ctx.beginPath();
+    ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize / 2 - 2, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2 - 10);
+    ctx.lineTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2 - 20);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "green";
+    ctx.stroke();
 
     ctx.fillStyle = "black";
     ctx.font = "20px Arial";
