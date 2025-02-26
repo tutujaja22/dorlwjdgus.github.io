@@ -21,18 +21,22 @@ function initGame() {
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount),
     };
-    dx = 1; // 시작 시 오른쪽
+    dx = 1;
     dy = 0;
     score = 0;
 
-    // 조이스틱 위치 조정
-    joystickContainer.style.left = (canvas.offsetLeft + canvas.width / 2 - 50) + "px";
+    // 조이스틱을 우측 하단에 배치
+    const canvasRect = canvas.getBoundingClientRect();
+    joystickContainer.style.left = (canvasRect.right - 120 - 10) + "px"; // 캔버스 우측에서 10px 여백
+    joystickContainer.style.top = (canvasRect.bottom - 120 - 10) + "px"; // 캔버스 하단에서 10px 여백
+    console.log("Joystick positioned at:", joystickContainer.style.left, joystickContainer.style.top);
 }
 
 function startGame(difficulty) {
     menu.style.display = "none";
     canvas.style.display = "block";
     joystickContainer.style.display = "block";
+    console.log("Joystick display set to block");
 
     initGame();
 
@@ -57,9 +61,9 @@ document.addEventListener("keydown", changeDirection);
 
 // 조이스틱 입력
 let isDragging = false;
-const joystickCenterX = 50; // 조이스틱 컨테이너 중심
-const joystickCenterY = 50;
-const maxDistance = 30; // 조이스틱 이동 범위
+const joystickCenterX = 60; // 조이스틱 크기 증가에 맞춤
+const joystickCenterY = 60;
+const maxDistance = 40; // 이동 범위 증가로 더 수월하게
 
 function setupJoystickListeners() {
     joystickContainer.addEventListener("touchstart", (e) => {
@@ -77,9 +81,8 @@ function setupJoystickListeners() {
 
     joystickContainer.addEventListener("touchend", (e) => {
         isDragging = false;
-        joystickKnob.style.left = "30px";
-        joystickKnob.style.top = "30px";
-        // 방향 유지 (터치 끝나도 현재 방향으로 계속 감)
+        joystickKnob.style.left = "35px";
+        joystickKnob.style.top = "35px";
     }, { passive: false });
 }
 
@@ -88,23 +91,19 @@ function handleJoystick(touch) {
     const touchX = touch.clientX - rect.left;
     const touchY = touch.clientY - rect.top;
 
-    // 조이스틱 중심으로부터의 거리 계산
     let deltaX = touchX - joystickCenterX;
     let deltaY = touchY - joystickCenterY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // 이동 범위 제한
     if (distance > maxDistance) {
         deltaX = (deltaX / distance) * maxDistance;
         deltaY = (deltaY / distance) * maxDistance;
     }
 
-    // 조이스틱 노브 이동
-    joystickKnob.style.left = (30 + deltaX) + "px";
-    joystickKnob.style.top = (30 + deltaY) + "px";
+    joystickKnob.style.left = (35 + deltaX) + "px";
+    joystickKnob.style.top = (35 + deltaY) + "px";
 
-    // 뱀 방향 설정
-    const threshold = 10; // 방향 전환 민감도
+    const threshold = 10;
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (deltaX > threshold && dx !== -1) {
             dx = 1;
