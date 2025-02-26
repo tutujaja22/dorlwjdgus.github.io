@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    overflow: hidden; /* 화면 밖으로 나가는 걸 막음 */
+}
+
+#gameCanvas {
+    border: 1px solid black;
+    width: 100%;
+    max-width: 400px; /* 최대 크기 제한 */
+    height: auto;
+}
