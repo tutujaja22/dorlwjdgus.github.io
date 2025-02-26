@@ -14,12 +14,14 @@ body {
     border: 1px solid black;
     width: 100%;
     max-width: 400px;
-    height: 400px; /* 고정 높이 추가 */
-    display: none; /* 처음엔 숨김 */
+    height: 400px;
+    display: none;
+    pointer-events: auto; /* 터치 및 클릭 가능 보장 */
 }
 
 #menu {
     text-align: center;
+    pointer-events: auto; /* 메뉴도 상호작용 가능 */
 }
 
 #menu h1 {
