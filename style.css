@@ -16,7 +16,7 @@ body {
     max-width: 400px;
     height: 400px;
     display: none;
-    pointer-events: auto;
+    pointer-events: none; /* 캔버스는 터치 안 받음 */
 }
 
 #menu {
@@ -44,12 +44,25 @@ body {
     background-color: #45a049;
 }
 
-/* 터치 피드백용 오버레이 */
-#touchOverlay {
+/* 조이스틱 스타일 */
+#joystickContainer {
     position: absolute;
-    width: 100%;
-    max-width: 400px;
-    height: 400px;
-    pointer-events: none; /* 캔버스 터치 방해 안 함 */
+    width: 100px;
+    height: 100px;
+    background: rgba(128, 128, 128, 0.3); /* 반투명 회색 */
+    border-radius: 50%;
     display: none;
+    bottom: 20px; /* 화면 하단에 위치 */
+    pointer-events: auto;
+}
+
+#joystickKnob {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.5); /* 반투명 흰색 */
+    border-radius: 50%;
+    top: 30px;
+    left: 30px;
+    pointer-events: none;
 }
