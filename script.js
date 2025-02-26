@@ -25,14 +25,19 @@ function initGame() {
     dy = 0;
     score = 0;
 
-    // 조이스틱을 캔버스 우측 하단에 배치
+    // 조이스틱을 캔버스 우측 하단에 배치 (정확히 계산)
     const canvasRect = canvas.getBoundingClientRect();
-    const joystickWidth = 120; // 조이스틱 너비
-    const joystickHeight = 120; // 조이스틱 높이
-    const offset = 10; // 캔버스와의 여백
+    const joystickWidth = 120;
+    const joystickHeight = 120;
+    const offset = 10;
 
-    joystickContainer.style.left = (canvasRect.right - joystickWidth - offset) + "px"; // 캔버스 오른쪽 끝에서 조이스틱 너비와 여백만큼 왼쪽
-    joystickContainer.style.top = (canvasRect.bottom - joystickHeight - offset) + "px"; // 캔버스 하단에서 조이스틱 높이와 여백만큼 위
+    // body 기준으로 조이스틱 위치 계산 (절대 좌표 사용)
+    const bodyRect = document.body.getBoundingClientRect();
+    const canvasLeft = canvasRect.left - bodyRect.left;
+    const canvasBottom = canvasRect.bottom - bodyRect.top;
+
+    joystickContainer.style.left = (canvasLeft + canvas.width - joystickWidth - offset) + "px"; // 캔버스 우측 끝에서 여백
+    joystickContainer.style.top = (canvasBottom - joystickHeight - offset) + "px"; // 캔버스 하단에서 여백
     console.log("Joystick positioned at:", joystickContainer.style.left, joystickContainer.style.top);
 }
 
