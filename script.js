@@ -7,30 +7,28 @@ const hardBtn = document.getElementById("hardBtn");
 
 // 게임 변수
 const gridSize = 25;
-let snake, food, dx, dy, score, speed, gameLoop, swipeThreshold;
+let snake, food, dx, dy, score, speed, gameLoop, swipeThreshold, tileCount;
 
 function initGame() {
     canvas.width = Math.min(window.innerWidth - 20, 400);
     canvas.height = canvas.width;
-    const tileCount = canvas.width / gridSize;
+    tileCount = canvas.width / gridSize;
 
     snake = [{ x: 10, y: 10 }];
     food = {
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount),
     };
-    dx = 0;
+    dx = 1; // 시작 시 오른쪽으로 움직임
     dy = 0;
     score = 0;
-
-    return tileCount;
 }
 
 function startGame(difficulty) {
     menu.style.display = "none";
     canvas.style.display = "block";
 
-    const tileCount = initGame();
+    initGame();
 
     if (difficulty === "easy") {
         speed = 4;
@@ -44,7 +42,7 @@ function startGame(difficulty) {
     }
 
     if (gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(() => drawGame(tileCount), 1000 / speed);
+    gameLoop = setInterval(drawGame, 1000 / speed);
 }
 
 easyBtn.addEventListener("click", () => startGame("easy"));
@@ -54,58 +52,62 @@ hardBtn.addEventListener("click", () => startGame("hard"));
 // 키보드 입력
 document.addEventListener("keydown", changeDirection);
 
-// 터치 입력 (수정된 부분)
+// 터치 입력
 let touchStartX = 0;
 let touchStartY = 0;
 
-// 터치 이벤트에 디버깅 로그 추가
-canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    console.log("Touch started at:", touchStartX, touchStartY); // 디버깅용
-}, { passive: false });
+// 터치 이벤트 리스너를 함수로 분리
+function setupTouchListeners() {
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        console.log("Touch started at:", touchStartX, touchStartY);
+    }, { passive: false });
 
-canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    const touchEndX = e.touches[0].clientX;
-    const touchEndY = e.touches[0].clientY;
+    canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        const touchEndX = e.touches[0].clientX;
+        const touchEndY = e.touches[0].clientY;
 
-    const diffX = touchEndX - touchStartX;
-    const diffY = touchEndY - touchStartY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
 
-    console.log("Touch moved:", diffX, diffY); // 디버깅용
+        console.log("Touch moved:", diffX, diffY);
 
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX > swipeThreshold && dx !== -1) {
-            dx = 1;
-            dy = 0;
-            console.log("Moving right");
-        } else if (diffX < -swipeThreshold && dx !== 1) {
-            dx = -1;
-            dy = 0;
-            console.log("Moving left");
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > swipeThreshold && dx !== -1) {
+                dx = 1;
+                dy = 0;
+                console.log("Moving right");
+            } else if (diffX < -swipeThreshold && dx !== 1) {
+                dx = -1;
+                dy = 0;
+                console.log("Moving left");
+            }
+        } else {
+            if (diffY > swipeThreshold && dy !== -1) {
+                dx = 0;
+                dy = 1;
+                console.log("Moving down");
+            } else if (diffY < -swipeThreshold && dy !== 1) {
+                dx = 0;
+                dy = -1;
+                console.log("Moving up");
+            }
         }
-    } else {
-        if (diffY > swipeThreshold && dy !== -1) {
-            dx = 0;
-            dy = 1;
-            console.log("Moving down");
-        } else if (diffY < -swipeThreshold && dy !== 1) {
-            dx = 0;
-            dy = -1;
-            console.log("Moving up");
-        }
-    }
 
-    touchStartX = touchEndX;
-    touchStartY = touchEndY;
-}, { passive: false });
+        touchStartX = touchEndX;
+        touchStartY = touchEndY;
+    }, { passive: false });
 
-// touchend 추가로 터치 끝난 후 상태 확인
-canvas.addEventListener("touchend", (e) => {
-    console.log("Touch ended");
-}, { passive: false });
+    canvas.addEventListener("touchend", (e) => {
+        console.log("Touch ended");
+    }, { passive: false });
+}
+
+// 게임 시작 시 터치 리스너 설정
+setupTouchListeners();
 
 function changeDirection(event) {
     const LEFT_KEY = 37;
@@ -125,7 +127,7 @@ function changeDirection(event) {
     if (keyPressed === DOWN_KEY && !goingUp) { dx = 0; dy = 1; }
 }
 
-function drawGame(tileCount) {
+function drawGame() {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
@@ -138,7 +140,7 @@ function drawGame(tileCount) {
         const speedIncrease = speed * 0.05;
         speed += speedIncrease;
         clearInterval(gameLoop);
-        gameLoop = setInterval(() => drawGame(tileCount), 1000 / speed);
+        gameLoop = setInterval(drawGame, 1000 / speed);
     } else {
         snake.pop();
     }
