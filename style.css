@@ -16,12 +16,12 @@ body {
     max-width: 400px;
     height: 400px;
     display: none;
-    pointer-events: auto; /* 터치 및 클릭 가능 보장 */
+    pointer-events: auto;
 }
 
 #menu {
     text-align: center;
-    pointer-events: auto; /* 메뉴도 상호작용 가능 */
+    pointer-events: auto;
 }
 
 #menu h1 {
@@ -42,4 +42,14 @@ body {
 
 #menu button:hover {
     background-color: #45a049;
+}
+
+/* 터치 피드백용 오버레이 */
+#touchOverlay {
+    position: absolute;
+    width: 100%;
+    max-width: 400px;
+    height: 400px;
+    pointer-events: none; /* 캔버스 터치 방해 안 함 */
+    display: none;
 }
