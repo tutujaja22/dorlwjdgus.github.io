@@ -16,7 +16,9 @@ body {
     max-width: 400px;
     height: 400px;
     display: none;
-    pointer-events: none; /* 캔버스는 터치 안 받음 */
+    pointer-events: none;
+    position: relative;
+    z-index: 1;
 }
 
 #menu {
@@ -47,22 +49,22 @@ body {
 /* 조이스틱 스타일 */
 #joystickContainer {
     position: absolute;
-    width: 100px;
-    height: 100px;
-    background: rgba(128, 128, 128, 0.3); /* 반투명 회색 */
+    width: 120px; /* 크기 증가 */
+    height: 120px;
+    background: rgba(128, 128, 128, 0.3);
     border-radius: 50%;
     display: none;
-    bottom: 20px; /* 화면 하단에 위치 */
+    z-index: 2;
     pointer-events: auto;
 }
 
 #joystickKnob {
     position: absolute;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.5); /* 반투명 흰색 */
+    width: 50px; /* 손잡이도 조금 크게 */
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    top: 30px;
-    left: 30px;
+    top: 35px; /* 중심 조정 */
+    left: 35px;
     pointer-events: none;
 }
