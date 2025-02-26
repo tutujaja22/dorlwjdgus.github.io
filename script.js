@@ -5,63 +5,68 @@ const easyBtn = document.getElementById("easyBtn");
 const normalBtn = document.getElementById("normalBtn");
 const hardBtn = document.getElementById("hardBtn");
 
-// 캔버스 설정
-const gridSize = 25;
-canvas.width = Math.min(window.innerWidth, 400);
-canvas.height = canvas.width;
-const tileCount = canvas.width / gridSize;
-
 // 게임 변수
-let snake = [{ x: 10, y: 10 }];
-let food = {
-    x: Math.floor(Math.random() * tileCount),
-    y: Math.floor(Math.random() * tileCount),
-};
-let dx = 0;
-let dy = 0;
-let score = 0;
-let speed;
-let gameLoop;
+const gridSize = 25;
+let snake, food, dx, dy, score, speed, gameLoop, swipeThreshold;
 
-// 난이도 설정 함수
-function startGame(difficulty) {
-    menu.style.display = "none"; // 메뉴 숨기기
-    canvas.style.display = "block"; // 캔버스 보이기
+function initGame() {
+    // 캔버스 크기 설정 (게임 시작 시마다 초기화)
+    canvas.width = Math.min(window.innerWidth - 20, 400); // 여백 고려
+    canvas.height = canvas.width;
+    const tileCount = canvas.width / gridSize;
 
-    // 난이도별 설정
-    if (difficulty === "easy") {
-        speed = 4; // 느린 속도
-        swipeThreshold = 40; // 덜 민감한 터치
-    } else if (difficulty === "normal") {
-        speed = 6; // 중간 속도
-        swipeThreshold = 30;
-    } else if (difficulty === "hard") {
-        speed = 8; // 빠른 속도
-        swipeThreshold = 20; // 민감한 터치
-    }
+    // 게임 초기화
+    snake = [{ x: 10, y: 10 }];
+    food = {
+        x: Math.floor(Math.random() * tileCount),
+        y: Math.floor(Math.random() * tileCount),
+    };
+    dx = 0;
+    dy = 0;
+    score = 0;
 
-    // 게임 시작
-    gameLoop = setInterval(drawGame, 1000 / speed);
+    return tileCount;
 }
 
-// 버튼 이벤트 연결
+// 난이도 설정 및 게임 시작
+function startGame(difficulty) {
+    menu.style.display = "none";
+    canvas.style.display = "block";
+
+    const tileCount = initGame();
+
+    if (difficulty === "easy") {
+        speed = 4;
+        swipeThreshold = 40;
+    } else if (difficulty === "normal") {
+        speed = 6;
+        swipeThreshold = 30;
+    } else if (difficulty === "hard") {
+        speed = 8;
+        swipeThreshold = 20;
+    }
+
+    if (gameLoop) clearInterval(gameLoop); // 기존 루프 제거
+    gameLoop = setInterval(() => drawGame(tileCount), 1000 / speed);
+}
+
+// 버튼 이벤트
 easyBtn.addEventListener("click", () => startGame("easy"));
 normalBtn.addEventListener("click", () => startGame("normal"));
 hardBtn.addEventListener("click", () => startGame("hard"));
 
-// 키보드 입력 처리
+// 키보드 입력
 document.addEventListener("keydown", changeDirection);
 
-// 터치 입력 처리
+// 터치 입력
 let touchStartX = 0;
 let touchStartY = 0;
-let swipeThreshold; // 난이도에 따라 바뀜
 
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
-});
+}, { passive: false });
 
 canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
@@ -91,7 +96,7 @@ canvas.addEventListener("touchmove", (e) => {
 
     touchStartX = touchEndX;
     touchStartY = touchEndY;
-});
+}, { passive: false });
 
 function changeDirection(event) {
     const LEFT_KEY = 37;
@@ -105,25 +110,13 @@ function changeDirection(event) {
     const goingRight = dx === 1;
     const goingLeft = dx === -1;
 
-    if (keyPressed === LEFT_KEY && !goingRight) {
-        dx = -1;
-        dy = 0;
-    }
-    if (keyPressed === UP_KEY && !goingDown) {
-        dx = 0;
-        dy = -1;
-    }
-    if (keyPressed === RIGHT_KEY && !goingLeft) {
-        dx = 1;
-        dy = 0;
-    }
-    if (keyPressed === DOWN_KEY && !goingUp) {
-        dx = 0;
-        dy = 1;
-    }
+    if (keyPressed === LEFT_KEY && !goingRight) { dx = -1; dy = 0; }
+    if (keyPressed === UP_KEY && !goingDown) { dx = 0; dy = -1; }
+    if (keyPressed === RIGHT_KEY && !goingLeft) { dx = 1; dy = 0; }
+    if (keyPressed === DOWN_KEY && !goingUp) { dx = 0; dy = 1; }
 }
 
-function drawGame() {
+function drawGame(tileCount) {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
@@ -133,10 +126,10 @@ function drawGame() {
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount),
         };
-        const speedIncrease = speed * 0.05; // 속도 증가를 더 완만하게 (5%)
+        const speedIncrease = speed * 0.05;
         speed += speedIncrease;
         clearInterval(gameLoop);
-        gameLoop = setInterval(drawGame, 1000 / speed);
+        gameLoop = setInterval(() => drawGame(tileCount), 1000 / speed);
     } else {
         snake.pop();
     }
@@ -171,10 +164,6 @@ function drawGame() {
 function gameOver() {
     clearInterval(gameLoop);
     alert("Game Over! Score: " + score);
-    snake = [{ x: 10, y: 10 }];
-    dx = 0;
-    dy = 0;
-    score = 0;
-    canvas.style.display = "none"; // 캔버스 숨기기
-    menu.style.display = "block"; // 메뉴 다시 보이기
+    canvas.style.display = "none";
+    menu.style.display = "block";
 }
