@@ -10,12 +10,10 @@ const gridSize = 25;
 let snake, food, dx, dy, score, speed, gameLoop, swipeThreshold;
 
 function initGame() {
-    // 캔버스 크기 설정 (게임 시작 시마다 초기화)
-    canvas.width = Math.min(window.innerWidth - 20, 400); // 여백 고려
+    canvas.width = Math.min(window.innerWidth - 20, 400);
     canvas.height = canvas.width;
     const tileCount = canvas.width / gridSize;
 
-    // 게임 초기화
     snake = [{ x: 10, y: 10 }];
     food = {
         x: Math.floor(Math.random() * tileCount),
@@ -28,7 +26,6 @@ function initGame() {
     return tileCount;
 }
 
-// 난이도 설정 및 게임 시작
 function startGame(difficulty) {
     menu.style.display = "none";
     canvas.style.display = "block";
@@ -46,11 +43,10 @@ function startGame(difficulty) {
         swipeThreshold = 20;
     }
 
-    if (gameLoop) clearInterval(gameLoop); // 기존 루프 제거
+    if (gameLoop) clearInterval(gameLoop);
     gameLoop = setInterval(() => drawGame(tileCount), 1000 / speed);
 }
 
-// 버튼 이벤트
 easyBtn.addEventListener("click", () => startGame("easy"));
 normalBtn.addEventListener("click", () => startGame("normal"));
 hardBtn.addEventListener("click", () => startGame("hard"));
@@ -58,14 +54,16 @@ hardBtn.addEventListener("click", () => startGame("hard"));
 // 키보드 입력
 document.addEventListener("keydown", changeDirection);
 
-// 터치 입력
+// 터치 입력 (수정된 부분)
 let touchStartX = 0;
 let touchStartY = 0;
 
+// 터치 이벤트에 디버깅 로그 추가
 canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
+    console.log("Touch started at:", touchStartX, touchStartY); // 디버깅용
 }, { passive: false });
 
 canvas.addEventListener("touchmove", (e) => {
@@ -76,26 +74,37 @@ canvas.addEventListener("touchmove", (e) => {
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
 
+    console.log("Touch moved:", diffX, diffY); // 디버깅용
+
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > swipeThreshold && dx !== -1) {
             dx = 1;
             dy = 0;
+            console.log("Moving right");
         } else if (diffX < -swipeThreshold && dx !== 1) {
             dx = -1;
             dy = 0;
+            console.log("Moving left");
         }
     } else {
         if (diffY > swipeThreshold && dy !== -1) {
             dx = 0;
             dy = 1;
+            console.log("Moving down");
         } else if (diffY < -swipeThreshold && dy !== 1) {
             dx = 0;
             dy = -1;
+            console.log("Moving up");
         }
     }
 
     touchStartX = touchEndX;
     touchStartY = touchEndY;
+}, { passive: false });
+
+// touchend 추가로 터치 끝난 후 상태 확인
+canvas.addEventListener("touchend", (e) => {
+    console.log("Touch ended");
 }, { passive: false });
 
 function changeDirection(event) {
